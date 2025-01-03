@@ -8,56 +8,27 @@
 import SwiftUI
 
 struct ContentView: View {
+    var viewModel: EmojiMemoryGame
+    
     let emojis = ["🍕", "👻", "❤️", "🚀", "💻", "🍌", "🐵", "🏀", "🍆", "🗿", "🌞", "🎨", "🐠", "🐧", "🐞", "🦋", "🐢", "🦀", "🍣", "🍉", "🌮", "🥑", "🎩", "🧸", "🕹️", "🚲", "🌈", "⚽", "🎸", "🎯", "🎭", "✈️", "🏝️", "📚", "💡", "🕶️", "🧊", "🍪", "🦕", "🦄"];
     
     @State var cardCount = 4
     
     var body: some View {
-        VStack {
-            ScrollView {
-                cards
-            }
-            Spacer()
-            cardsCountAdjuster
+        ScrollView {
+            cards
         }
         .padding()
     }
     
     
     var cards: some View {
-        LazyVGrid(columns: [GridItem(.adaptive(minimum: 120))]) {
-            ForEach(0..<cardCount, id: \.self) { index in
+        LazyVGrid(columns: [GridItem(.adaptive(minimum: 70))]) {
+            ForEach(emojis.indices, id: \.self) { index in
                 CardView(content: emojis[index])
                     .aspectRatio(2/3, contentMode: .fit)
             }
         }
-        .foregroundStyle(.orange)
-    }
-    
-    var cardsCountAdjuster: some View {
-        HStack {
-            cardRemover
-            Spacer()
-            cardAdder
-        }
-        .imageScale(.large)
-    }
-    
-    func cardCountAdjuster(by offset: Int, symbol: String) -> some View {
-        Button(action: {
-            cardCount += offset
-        }, label: {
-            Image(systemName: symbol)
-        })
-        .disabled(cardCount + offset < 1 || cardCount + offset > emojis.count)
-    }
-    
-    var cardRemover: some View {
-        cardCountAdjuster(by: -1, symbol: "rectangle.stack.badge.minus.fill")
-    }
-    
-    var cardAdder: some View {
-        cardCountAdjuster(by: +1, symbol: "rectangle.stack.badge.plus.fill")
     }
 }
 
@@ -70,20 +41,32 @@ struct CardView: View {
         ZStack {
             let base = RoundedRectangle(cornerRadius: 12)
             
-            Group {
+            if isFaceUp {
                 base.fill(.white)
-                base.strokeBorder(lineWidth: 2)
-                Text(content).font(.largeTitle)
+                    .shadow(color: .gray.opacity(0.4), radius: 4, x: 0, y: 2)
+                base.strokeBorder(Color.gray.opacity(0.2), lineWidth: 1)
+                Text(content)
+                    .font(.largeTitle)
+                    .shadow(color: .gray.opacity(0.1), radius: 1, x: 0, y: 1)
+            } else {
+                base.fill(
+                    LinearGradient(
+                        colors: [.blue.opacity(0.7), .purple.opacity(0.7)],
+                        startPoint: .topLeading,
+                        endPoint: .bottomTrailing
+                    )
+                )
+                .shadow(color: .gray.opacity(0.4), radius: 4, x: 0, y: 2)
             }
-            .opacity(isFaceUp ? 1 : 0)
-            base.fill().opacity(isFaceUp ? 0 : 1)
-            
-        }.onTapGesture {
-            isFaceUp.toggle()
+        }
+        .onTapGesture {
+            withAnimation(.easeInOut(duration: 0.15)) {
+                isFaceUp.toggle()
+            }
         }
     }
 }
 
-#Preview {
-    ContentView()
-}
+//#Preview {
+//    ContentView()
+//}
